@@ -15,10 +15,9 @@ def download_instagram_video(instagram_url: str) -> str | None:
     file_id = str(uuid.uuid4())
     
     ydl_opts = {
-        'quiet': True,
-        'no_warnings': True,
-        # Get best video + best audio and merge them into an mp4. Fallback to best single mp4 if merging isn't possible.
-        'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
+        'quiet': False,
+        'no_warnings': False,
+        'format': 'bestvideo+bestaudio/best',
         'outtmpl': f'static/{file_id}.%(ext)s',
         'merge_output_format': 'mp4',
         'skip_download': False,
