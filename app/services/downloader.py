@@ -14,6 +14,7 @@ def download_instagram_video(instagram_url: str) -> str | None:
     # Generate a unique filename prefix
     file_id = str(uuid.uuid4())
     
+    # First try without cookies to get the full unauthenticated DASH manifest
     ydl_opts = {
         'quiet': False,
         'no_warnings': False,
@@ -26,27 +27,30 @@ def download_instagram_video(instagram_url: str) -> str | None:
         'skip_download': False,
     }
     
-    # Instagram requires authentication for most requests now.
-    if os.path.exists('cookies.txt'):
-        ydl_opts['cookiefile'] = 'cookies.txt'
-
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            # download=True actually downloads and saves the file based on outtmpl
             info_dict = ydl.extract_info(instagram_url, download=True)
-            
-            # Since we downloaded it, yt-dlp provides the exact filename it saved it as
             if 'entries' in info_dict:
                 info = info_dict['entries'][0]
             else:
                 info = info_dict
-                
-            # The final extension is .mp4 because of merge_output_format
             return f"{file_id}.mp4"
 
-    except yt_dlp.utils.DownloadError as e:
-        logger.error(f"Download Error: {e}")
-        return None
     except Exception as e:
-        logger.error(f"Unexpected Error: {e}")
+        logger.error(f"First attempt without cookies failed: {e}. Retrying with cookies...")
+        
+        # Fallback to using cookies if rate-limited or login required
+        if os.path.exists('cookies.txt'):
+            ydl_opts['cookiefile'] = 'cookies.txt'
+            try:
+                with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                    info_dict = ydl.extract_info(instagram_url, download=True)
+                    if 'entries' in info_dict:
+                        info = info_dict['entries'][0]
+                    else:
+                        info = info_dict
+                    return f"{file_id}.mp4"
+            except Exception as e2:
+                logger.error(f"Second attempt with cookies failed: {e2}")
+                return None
         return None
