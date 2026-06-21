@@ -12,7 +12,7 @@ def extract_instagram_url(instagram_url: str) -> str | None:
     ydl_opts = {
         'quiet': True,
         'no_warnings': True,
-        'format': 'best[ext=mp4]/best',
+        'format': 'b',  # 'b' forces yt-dlp to pick the best single file with BOTH audio and video
         'skip_download': True,
     }
     
