@@ -20,6 +20,9 @@ def download_instagram_video(instagram_url: str) -> str | None:
         'format': 'bestvideo+bestaudio/best',
         'outtmpl': f'static/{file_id}.%(ext)s',
         'merge_output_format': 'mp4',
+        'postprocessor_args': {
+            'merger': ['-c:v', 'copy', '-c:a', 'aac']
+        },
         'skip_download': False,
     }
     
